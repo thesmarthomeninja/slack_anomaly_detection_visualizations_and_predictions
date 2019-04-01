@@ -17,7 +17,7 @@
 #in the .slackr file store just this text and save the file - without the # symbols of course!
 
 #api_token: YOUR_FULL_API_TOKEN
-#channel: #general
+#channel: #INSERT_CHANNEL_NAME_HERE
 #username: slackr
 #incoming_webhook_url: https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX
 
@@ -32,7 +32,7 @@ install.packages("slackr")
 install.packages("RSiteCatalyst")
 install.packages("ggploto2")
 
-library(slackr)
+library("slackr")
 
 slackr_setup(channel = '#insert_channel_name_you_setup_with_api_config', username = 'insertusername_defaults_to_slackr', incoming_webhook_url = 'get_from_api_setup_configuration_via_slack_api_settings_for_channel', api_token = 'get_from_api_setup_use_api_tester_if_unsure_of_api_key', config_file = '~/.slackr', echo = FALSE)
 
@@ -51,7 +51,7 @@ dateTo <- Sys.Date()-1
 visits_w_forecast <- QueueOvertime("insert_your_report_suite_id", date.from = dateFrom, date.to= dateTo, metrics = "visits", date.granularity ="day", anomaly.detection = TRUE)
 
 #Plot data using ggplot2
-library(ggplot2)
+library("ggplot2")
 
 #Combine year/month/day together into POSIX
 visits_w_forecast$date <- ISOdate(visits_w_forecast$year, visits_w_forecast$month, visits_w_forecast$day)
@@ -94,46 +94,42 @@ ggplot(visits_w_forecast, aes(date)) +
   geom_text(aes(label=LCL, family = "Garamond"), y = visits_w_forecast$lowerBound.visits, size=4.5, hjust = -.1)
 
 
-ggslackr(plot = last_plot(), channel = "#same_channel_you_declared_in_slack_setup_at_top_of_this_script")
+ggslackr(plot = last_plot(), channel = "#INSERT_CHANNEL_NAME_HERE")
+text_slackr("Visits Trend w/ Anomaly Detection for www.mysite.com", channel = "#INSERT_CHANNEL_NAME_HERE")
+
 
 #optional - to add title and create a report to reference if an anomaly is detected
-text_slackr("Click this link to go to Report: https://sc5.omniture.com/insert_custom_url_link_to_report_here", channel = "#same_channel_you_declared_in_slack_setup_at_top_of_this_script")
+#text_slackr("Click this link to go to Report: <insert_custom_url_link_to_report_here>", channel = "#same_channel_you_declared_in_slack_setup_at_top_of_this_script")
 
 
-#For Prophet Forecasting/Predicting Future Visits#convert each dataframe to the variable name data
+#For Prophet Forecasting/Predicting Future Visits
+install.packages("prophet")
+library("prophet")
 
+#convert each dataframe to the variable name data
 data <- visits_w_forecast
 
 
 #qplot(date, visits, data = data)
-
 ds <- data$datetime
-
 y <- log(data$visits)
-
 df <- data.frame(ds,y)
 
 m <- prophet(df, daily.seasonality = TRUE) 
-
 View(m)
-
 make_future_dataframe(m, periods = 35)
 
 tail(future)
-
 future <- make_future_dataframe(m, periods = 7)
-
 tail(future)
 
 predict(m, future)
-
 forecast <- predict(m, future)
-
 tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 
 plot(m, forecast)
-ggslackr(plot = last_plot(), channel = "#random")
-text_slackr("Prophet Forecasting and Daily Seasonality Reports: Pageviews", channel = "#random")
+ggslackr(plot = last_plot(), channel = "#INSERT_CHANNEL_NAME_HERE")
+text_slackr("Prophet Forecasting and Daily Seasonality Reports: Visits", channel = "#INSERT_CHANNEL_NAME_HERE")
 
 prophet_plot_components(m, forecast)
 ggslackr(plot = last_plot(), channel = "#INSERT_CHANNEL_NAME_HERE")
